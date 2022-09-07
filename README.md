@@ -14,8 +14,6 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 - No statistical influence of variables on sentiment severity of words. But there are skews in the usage of some words (in accordance with previous research on Fairy-tales)
 - Skewed words are not statistically influential
 
-![image](https://user-images.githubusercontent.com/92882742/188776576-aaf1b1b6-7603-41d3-99dd-1f866debb897.png)
-
 ## Assumptions
 - Although gender is non-binary we only considered male and female pronouns for simplicity and ignored neutral pronouns such as ‘they/them.’
 - Top 50 most common proper nouns were used
