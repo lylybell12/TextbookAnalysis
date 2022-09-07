@@ -9,7 +9,7 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 - Produced a text mining algorithm to compare the significance of words surrounding pronouns via analysis on R using the `tidytext` package
 - Sentiment value was extracted from the verbs and adjectives surrounding feminine/masculine pronouns and proper nouns using `AFINN` lexicon
 - Sentiment severity was calculated using the frequency and the sentiment value of a word
-- Run ANOVA testing on negative and positive words
+- Ran ANOVA testing on negative and positive words
 - The word comparison between gender pronouns were then visualized for facilitated analysis using `ggplot2` package
 - No statistical influence of variables on sentiment severity of words. But there are skews in the usage of some words (in accordance with previous research on Fairy-tales)
 - Skewed words are not statistically influential
