@@ -11,6 +11,8 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 - Sentiment severity was calculated using the frequency and the sentiment value of a word
 - Ran ANOVA testing on negative and positive words
 - The word comparison between gender pronouns were then visualized for facilitated analysis using `ggplot2` package
+
+## Results
 - No statistical influence of variables on sentiment severity of words. But there are skews in the usage of some words (in accordance with previous research on Fairy-tales)
 - Skewed words are not statistically influential
 
