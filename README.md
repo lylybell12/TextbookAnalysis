@@ -29,10 +29,10 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 
 ## Bargraphs Comparing Sentiment Severity
 
-### Sentiment Seversity for Masculine-associated words
+### Sentiment Seversity for Masculine-Associated words
 ![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/SentimentSeverityMales.png)
 
-### Sentiment Seversity for Feminine-associated words
+### Sentiment Seversity for Feminine-Associated words
 ![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/SentimentSeverityFemales.png)
 
 ## ANOVA Testing
