@@ -16,12 +16,10 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 
 ![image](https://user-images.githubusercontent.com/92882742/188776576-aaf1b1b6-7603-41d3-99dd-1f866debb897.png)
 
-
 ## Assumptions
 - Although gender is non-binary we only considered male and female pronouns for simplicity and ignored neutral pronouns such as ‘they/them.’
 - Top 50 most common proper nouns were used
 - Dataset contained 20 textbooks and 10 articles 
-
 
 ## Bigram Visualizations
 
@@ -42,9 +40,11 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 ### Sentiment Seversity for Feminine-associated words
 ![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/SSF.png)
 
-### ANOVA Tesing for Negative Words
+## ANOVA Testing
+
+### Tesing for Negative Words
 ![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVANEG.png)
 
-### ANOVA Tesing for Positive Words
+### Tesing for Positive Words
 ![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVAPOS.png)
 
