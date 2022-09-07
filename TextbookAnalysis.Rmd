@@ -1,5 +1,5 @@
 ---
-title: "20 textbooks and 10 articles across varies academic subjects"
+title: "20 textbooks and 10 articles across a variety of academic subjects"
 output: html_notebook
 ---
 
