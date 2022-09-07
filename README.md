@@ -1,5 +1,5 @@
 # Textbook Analysis (second semester progress)
-Text mining and sentiment analysis of adjectives and verbs that surround masculine (he/him/his/himself), feminine (she/her/hers/herself) pronouns and top 50 proper nouns. The goal is to use this text-mining algorithm to assess the effects of sexism in educational content to uncover underlying influences in gender and STEM enrollment disproportionality. 
+Text mining and sentiment analysis of adjectives and verbs that surround masculine (he/him/his/himself), feminine (she/her/hers/herself) pronouns and top 50 proper nouns. The goal is to use this text-mining algorithm to assess the effects of sexism in academic content to uncover underlying influences in gender and STEM enrollment disproportionality. 
 
 ## How to start the analysis
 1. Download and open folder on RStudio
@@ -41,3 +41,9 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 
 ### Sentiment Seversity for Feminine-associated words
 ![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/SSF.png)
+
+### ANOVA Tesing for Negative Words
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVANEG.png)
+
+### ANOVA Tesing for Positive Words
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVAPOS.png)
