@@ -30,16 +30,16 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 ## Bargraphs Comparing Sentiment Severity
 
 ### Sentiment Seversity for Masculine-associated words
-![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/SSM.png)
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/SentimentSeverityMales.png)
 
 ### Sentiment Seversity for Feminine-associated words
-![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/SSF.png)
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/SentimentSeverityFemales.png)
 
 ## ANOVA Testing
 
 ### Tesing for Negative Words
-![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVANEG.png)
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/ANOVANEG.png)
 
 ### Tesing for Positive Words
-![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVAPOS.png)
+![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/TextbookAnalysisVisuals/ANOVAPOS.png)
 
