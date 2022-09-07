@@ -23,9 +23,6 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 
 ## Bigram Visualizations
 
-### Initial Bigram (sample)
-![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/InitialBigram.PNG)
-
 ### Pronoun Separation Bigram (sample)
 ![alt_text](https://github.com/lylybell12/FairyTalesAnalysis/blob/main/visualizations/IntermediateBigram.PNG)
 
