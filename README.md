@@ -12,12 +12,6 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 - Run ANOVA testing on negative and positive words
 - The word comparison between gender pronouns were then visualized for facilitated analysis using `ggplot2` package.
 - No statistical influence of variables on sentiment severity of words. But there are skews in the usage of some words (in accordance with previous research on Fairy-tales). 
-      More “masculine”
-        -  Best
-        -  Great
-      More “feminine”
-      -   Pretty
-      -   Cried
 - Skewed words are not statistically influential.  
 
 ![image](https://user-images.githubusercontent.com/92882742/188776576-aaf1b1b6-7603-41d3-99dd-1f866debb897.png)
