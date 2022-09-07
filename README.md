@@ -47,3 +47,4 @@ Text mining and sentiment analysis of adjectives and verbs that surround masculi
 
 ### ANOVA Tesing for Positive Words
 ![alt_text](https://github.com/lylybell12/TextbookAnalysis/blob/main/ANOVAPOS.png)
+
