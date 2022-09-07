@@ -1,11 +1,10 @@
 ---
-title: "10 different subjects"
+title: "20 textbooks and 10 articles across varies academic subjects"
 output: html_notebook
 ---
 
-
 ```{r}
-## packages
+# packages required
 require(tm) 
 require(wordcloud)
 require(RColorBrewer)
@@ -20,12 +19,10 @@ library(reshape2)
 library(tibble)
 library(udpipe)
 ```
-
 ```{r}
+# converting pdf files to txt 
 source("pdfTotxt.R")
 ```
-
-
 ```{r}
 # Each story ends with an <EOS> line
 df <- 
@@ -34,16 +31,13 @@ df <-
                text=unlist(lapply(sapply(pdfdatabase, '[', "content"),paste,collapse="\n")))
 ```
 
-
-
 ```{r}
 plot_df <- df %>%
   unnest_tokens(word, text)
 plot_df
 ```
-
-
 ```{r}
+# bigram creation
 bigrams <- df %>%
   unnest_tokens(bigram, text, token = "ngrams", n = 2)
 
@@ -53,8 +47,8 @@ bigrams_separated <- bigrams %>%
 bigrams_separated
 ```
 
-
 ```{r}
+# top 50 common proper nouns
 male_names <- c("james", "robert", "john", "michael", "william", "david"
                 , "richard", "joseph", "thomas", "charles", "christopher", "daniel", "matthew", "anthony", "mark", "donald", "steven", "paul", "andrew", "joshua")
 
@@ -64,6 +58,7 @@ female_names <- c("mary", "patricia", "jennifer", "linda", "elizabeth"
 ```
 
 ```{r}
+# specifying targeted words
 masculine_words <- c("he", "his", "him", "himself", male_names)
 feminine_words <- c("she", "her", "hers", "herself", female_names)
 
@@ -76,7 +71,6 @@ he_she_words
 ```{r he_she_counts, dependson = "bigrams_separated"}
 # Gender-associated verbs
 # Which words were most shifted towards occurring after "he" or "she"? We'll filter for words that appeared at least x times
-
 
 he_she_counts <- he_she_words %>%
   count(book, word1, word2) %>% 
@@ -138,14 +132,11 @@ words <- he_she_counts %>%
 
 words
 
-
 meaningful_words <- he_she_counts %>%
   inner_join(AFINN , by = c(word2 = "word")) %>%
   select(book, word2, masculine, feminine, value, log_ratio, abs_ratio, total)
 meaningful_words
-
 ```
-
 
 ```{r}
 # graphing sentiment severity based on gender
@@ -229,7 +220,6 @@ gender_SS <- words[1:5] %>%
 gender_SS
 ```
 
-
 ```{r}
 # all positive words
 
@@ -248,8 +238,6 @@ all_pos_f = gender_SS %>%
 all_pos_f
 
 ```
-
-
 
 ```{r}
 ## all negative words
@@ -270,9 +258,7 @@ all_neg_f
 
 ```
 
-
-
-```{r}
+# ```{r}
 # ## top 50 positive words
 # #head(sort(gender_SS$severity_m,decreasing=TRUE), sort n=5)
 # 
@@ -292,8 +278,7 @@ all_neg_f
 # top_pos_f
 # #mean(top_neg_m$severity_m)
 
-```
-
+# ```
 
 # ```{r}
 # top_pos_words = smartbind(top_pos_f, top_pos_m)
@@ -329,19 +314,13 @@ all_pos_words$gender = as.factor(all_pos_words$gender)
 all_pos_words$POST1960 = as.factor(all_pos_words$year>1960) 
 #all_pos_words$year = as.factor(all_pos_words$year) ##only needed if looking into years as factors instead of POST1960
 all_pos_words
-
-
 ```
-
 
 ```{r}
 # #two way ANOVA for ALL POSTIVE WORDS
 res.aov2 <- aov(severity_value ~  hard.v.soft + POST1960*gender, data = all_pos_words) ##cross anova
 anova(res.aov2)
-
-
 ```
-
 
 # ```{r}
 # #top 50 negative words 
@@ -391,13 +370,11 @@ anova(result.aov2)
 total_words = rbind(all_pos_words, all_neg_words)
 total_words
 ```
-
 ```{r}
 # two way ANOVA for total words
 results.aov2 <- aov(severity_value ~ gender*hard.v.soft, data = total_words)
 anova(results.aov2)
 ```
-
 ```{r}
 # visualizing meaningful words with respect to masculine contribution
 
@@ -433,8 +410,6 @@ sig_words <- meaningful_words %>%
 meaningful_words[1:3]
 ```
 
-
-
 ```{r most_shifted_words, dependson = "he_she_counts", echo = FALSE}
 meaningful_words %>%
   filter(!word2 %in% c("a", "the", "on", "with", "it", "to", "and", "in", "was", "as","how", "can", "of", "but", "not", "so", "for", "had", "if","that", "you", "I", "at", "is", "by", "when", "will", "The", "And", "did", "would", "or"),
@@ -454,17 +429,6 @@ meaningful_words %>%
   scale_y_continuous(labels = c("4X", "2X", "Same", "2X"),
                      breaks = seq(-2, 1)) +
   guides(fill = guide_legend(reverse = TRUE))
-```
-
-
-```{r}
-one.way <- aov(severity_m ~ hard.v.soft, data = all_neg_m)
-
-summary(one.way)
-
-one.way <- aov(severity_f ~ hard.v.soft, data = all_neg_f)
-
-summary(one.way)
 ```
 
 ```{r}
