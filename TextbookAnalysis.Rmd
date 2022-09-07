@@ -1,0 +1,527 @@
+---
+title: "10 different subjects"
+output: html_notebook
+---
+
+
+```{r}
+## packages
+require(tm) 
+require(wordcloud)
+require(RColorBrewer)
+library(tidytext)
+library(tidyr)
+library(readr)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(gtools)
+library(reshape2)
+library(tibble)
+library(udpipe)
+```
+
+```{r}
+source("pdfTotxt.R")
+```
+
+
+```{r}
+# Each story ends with an <EOS> line
+df <- 
+    data.frame(book=factor(sapply(pdfdatabase, meta, "id")),
+               #book=factor(sapply(pdfdatabase, meta, "datetimestamp")),
+               text=unlist(lapply(sapply(pdfdatabase, '[', "content"),paste,collapse="\n")))
+```
+
+
+
+```{r}
+plot_df <- df %>%
+  unnest_tokens(word, text)
+plot_df
+```
+
+
+```{r}
+bigrams <- df %>%
+  unnest_tokens(bigram, text, token = "ngrams", n = 2)
+
+bigrams_separated <- bigrams %>% 
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+bigrams_separated
+```
+
+
+```{r}
+male_names <- c("james", "robert", "john", "michael", "william", "david"
+                , "richard", "joseph", "thomas", "charles", "christopher", "daniel", "matthew", "anthony", "mark", "donald", "steven", "paul", "andrew", "joshua")
+
+female_names <- c("mary", "patricia", "jennifer", "linda", "elizabeth"
+, "barbara", "susan", "jessica", "sarah", "karen", "nancy", "lisa", "betty", "margaret", "sandra", "ashley", "kimberly", "emily", "donna", "michelle")
+
+```
+
+```{r}
+masculine_words <- c("he", "his", "him", "himself", male_names)
+feminine_words <- c("she", "her", "hers", "herself", female_names)
+
+he_she_words <- bigrams_separated %>%
+  filter(word1 %in% c(masculine_words, feminine_words))
+
+he_she_words
+```
+
+```{r he_she_counts, dependson = "bigrams_separated"}
+# Gender-associated verbs
+# Which words were most shifted towards occurring after "he" or "she"? We'll filter for words that appeared at least x times
+
+
+he_she_counts <- he_she_words %>%
+  count(book, word1, word2) %>% 
+  spread(word1, n, fill = 0) %>%
+  mutate(total = he + him + his + himself + she + her + hers + herself,  
+         
+         he = (he + 1) / sum(he + 1),
+         him = (him + 1) / sum(him + 1),
+         his = (his + 1) / sum(his + 1),
+         himself = (himself + 1) / sum(himself + 1),
+         
+         she = (she + 1) / sum(she + 1),
+         her = (her + 1) / sum(her + 1),
+         hers = (hers + 1) / sum(hers + 1),
+         herself = (herself + 1) / sum(herself + 1),
+         
+         masculine = he + his + him + himself,
+         feminine = she + her + hers + herself
+         
+  )
+
+  he_she_counts[,'male_names'] = 0
+  for (m in male_names)
+  {
+  he_she_counts[,'total'] = he_she_counts[,'total'] + he_she_counts[,m]
+  he_she_counts[,m] = (he_she_counts[,m] + 1) / sum(he_she_counts[,m] + 1)
+  he_she_counts[,'masculine'] = he_she_counts[,'masculine'] + he_she_counts[,m]
+  he_she_counts[,'male_names'] = he_she_counts[,'male_names'] + he_she_counts[,m]
+  }
+  
+  he_she_counts[,'female_names'] = 0
+  for (f in female_names)
+  {
+  he_she_counts[,'total'] = he_she_counts[,'total'] + he_she_counts[,f]
+  he_she_counts[,f] = (he_she_counts[,f] + 1) / sum(he_she_counts[,f] + 1)
+  he_she_counts[,'feminine'] = he_she_counts[,'feminine'] + he_she_counts[,f]
+  he_she_counts[,'female_names'] = he_she_counts[,'female_names'] + he_she_counts[,f]
+  }
+  
+  he_she_counts = he_she_counts %>% mutate(
+         severity = masculine + feminine,
+         log_ratio = log2(masculine / feminine),
+         abs_ratio = abs(log_ratio)) %>%
+  arrange(desc(log_ratio)) 
+  
+
+he_she_counts   
+```
+
+```{r}
+# extracting sentiment analysis 
+AFINN <- get_sentiments("afinn")
+
+AFINN
+
+words <- he_she_counts %>%
+  inner_join(AFINN , by = c(word2 = "word")) %>%
+  select(book, word2, masculine, feminine, value)
+
+words
+
+
+meaningful_words <- he_she_counts %>%
+  inner_join(AFINN , by = c(word2 = "word")) %>%
+  select(book, word2, masculine, feminine, value, log_ratio, abs_ratio, total)
+meaningful_words
+
+```
+
+
+```{r}
+# graphing sentiment severity based on gender
+
+gender_SS <- words[1:5] %>%
+  mutate(severity_m = masculine * value) %>%
+  mutate(severity_f = feminine * value) %>%
+  select(book, word2, severity_m, severity_f) %>%
+  mutate(
+    year = case_when(
+      book == "AP_Biology.pdf"        ~ "2018",
+      book == "A_Guide_to_Naturalist.pdf"        ~ "2019",
+      book == "Astronomy.pdf"        ~ "2022",
+      book == "Biology_Laboratories.pdf"        ~ "1950",
+      book == "Intro_Business.pdf"        ~ "2018",
+      book == "Business_and_Benevolence.pdf"        ~ "1988",
+      
+      book == "Calculus_1.pdf"        ~ "2020",
+      book == "Career_and_Technical_Education.pdf"        ~ "2020",
+      book == "Textbooks_and_School_Curricula.pdf"        ~ "1940",
+      book == "Chemistry_in_the_French_Enlightenment.pdf"        ~ "2014",
+      
+      book == "Economic_Geography.pdf"        ~ "1957",
+      book == "How_Arguments_Work.pdf"        ~ "2021",
+      book == "American_Historian.pdf"        ~ "1943", 
+      book == "World_History_To_1648.pdf"        ~ "2017",
+      book == "Introduction_To_Anthropology.pdf"        ~ "2022",
+      book == "Key_To_Humanization.pdf"        ~ "1973",
+      book == "Intro_American_Literature_1865_to_Present.pdf"        ~ "2015",
+      book == "American_Government.pdf"        ~ "2019",
+      book == "Calculus.pdf"        ~ "1971",
+      book == "AP_Physics.pdf"        ~ "2017",
+      book == "Physics_in_Pre-Nazi_Germany.pdf"        ~ "1941",
+      book == "Principles_of_Management.pdf"        ~ "2019",
+      book == "Science_and_Human_Survival.pdf"        ~ "1961",
+      book == "Social Science.pdf"        ~ "2019",
+      book == "Mental_Growth_and_Personality_Development.pdf"        ~ "1958",
+      book == "The_Human_Biology_Council.pdf"        ~ "1976",
+      book == "The_Humanities_and_Education_for_Humanity.pdf"        ~ "1970",
+      book == "Transistor_Physics.pdf"        ~ "1954",
+      book == "Women_Writing_on_Writing_Women.pdf"        ~ "2007",
+      book == "Writing_Guide.pdf"        ~ "2021"
+      )) %>%
+  mutate(
+    hard.v.soft = case_when(
+      book == "AP_Biology.pdf"        ~ "H",
+      book == "A_Guide_to_Naturalist.pdf"        ~ "H",
+      book == "Astronomy.pdf"        ~ "H",
+      book == "Biology_Laboratories.pdf"        ~ "H",
+      book == "Intro_Business.pdf"        ~ "S",
+      book == "Business_and_Benevolence.pdf"        ~ "S",
+      
+      book == "Calculus_1.pdf"        ~ "H",
+      book == "Career_and_Technical_Education.pdf"        ~ "S",
+      book == "Textbooks_and_School_Curricula.pdf"        ~ "S",
+      book == "Chemistry_in_the_French_Enlightenment.pdf"        ~ "H",
+      
+      book == "Economic_Geography.pdf"        ~ "S",
+      book == "How_Arguments_Work.pdf"        ~ "S",
+      book == "American_Historian.pdf"        ~ "S", 
+      book == "World_History_To_1648.pdf"        ~ "S",
+      book == "Introduction_To_Anthropology.pdf"        ~ "S",
+      book == "Key_To_Humanization.pdf"        ~ "S",
+      book == "Intro_American_Literature_1865_to_Present.pdf"        ~ "S",
+      book == "American_Government.pdf"        ~ "S",
+      book == "Calculus.pdf"        ~ "H",
+      book == "AP_Physics.pdf"        ~ "H",
+      book == "Physics_in_Pre-Nazi_Germany.pdf"        ~ "H",
+      book == "Principles_of_Management.pdf"        ~ "S",
+      book == "Science_and_Human_Survival.pdf"        ~ "H",
+      book == "Social Science.pdf"        ~ "S",
+      book == "Mental_Growth_and_Personality_Development.pdf"        ~ "S",
+      book == "The_Human_Biology_Council.pdf"        ~ "H",
+      book == "The_Humanities_and_Education_for_Humanity.pdf"        ~ "S",
+      book == "Transistor_Physics.pdf"        ~ "H",
+      book == "Women_Writing_on_Writing_Women.pdf"        ~ "S",
+      book == "Writing_Guide.pdf"        ~ "S"
+      )) 
+
+  gender_SS$hard.v.soft = as.factor(gender_SS$hard.v.soft)
+gender_SS
+```
+
+
+```{r}
+# all positive words
+
+all_pos_m = gender_SS %>%
+  add_column(gender = "M") %>%
+  filter(severity_m >=0) %>%
+  select(book, word2, severity_m, gender, year, hard.v.soft) %>%
+  arrange((severity_m)) 
+all_pos_m
+
+all_pos_f = gender_SS %>%
+  add_column(gender = "F") %>%
+  filter(severity_f >=0) %>%
+  select(book, word2, severity_f, gender, year, hard.v.soft) %>%
+  arrange((severity_f)) 
+all_pos_f
+
+```
+
+
+
+```{r}
+## all negative words
+
+all_neg_m = gender_SS %>%
+  add_column(gender = "M") %>%
+  select(book, word2, severity_m, gender, year, hard.v.soft) %>%
+  filter(severity_m <0) %>%
+  arrange((severity_m))
+all_neg_m
+
+all_neg_f = gender_SS %>%
+  add_column(gender = "F") %>%
+  select(book, word2, severity_f, gender, year, hard.v.soft) %>%
+  filter(severity_f <0) %>%
+  arrange((severity_f)) 
+all_neg_f
+
+```
+
+
+
+```{r}
+# ## top 50 positive words
+# #head(sort(gender_SS$severity_m,decreasing=TRUE), sort n=5)
+# 
+# top_pos_m = gender_SS %>%
+#   add_column(gender = "M") %>%
+#   arrange(desc(severity_m)) %>%
+#   head(50) %>% 
+#   select(book, word2, severity_m, gender)
+# top_pos_m
+# #mean(top_pos_m$severity_m)
+# 
+# top_pos_f = gender_SS %>%
+#   add_column(gender = "F") %>%
+#   arrange(desc(severity_f)) %>%
+#   head(50) %>%
+#   select(book, word2, severity_f, gender)
+# top_pos_f
+# #mean(top_neg_m$severity_m)
+
+```
+
+
+# ```{r}
+# top_pos_words = smartbind(top_pos_f, top_pos_m)
+# 
+# #top_pos_words = levels(factor(top_pos_words$gender))
+# 
+# top_pos_words = melt(top_pos_words, id.vars=c("book", "word2", "gender"), na.rm = TRUE, variable.name = 'severity')
+# 
+# names(top_pos_words)[names(top_pos_words) == 'value'] <- "severity_value"
+# 
+# top_pos_words = top_pos_words %>%
+#   arrange(desc(severity_value)) %>%
+#   select(book, word2, severity_value, gender)
+# top_pos_words
+# 
+# ```
+
+
+
+```{r}
+all_pos_words = smartbind(all_pos_f, all_pos_m)
+
+#top_pos_words = levels(factor(top_pos_words$gender))
+
+all_pos_words = melt(all_pos_words, id.vars=c("book", "word2", "gender", "year", "hard.v.soft"), na.rm = TRUE, variable.name = 'severity')
+
+names(all_pos_words)[names(all_pos_words) == 'value'] <- "severity_value"
+
+all_pos_words = all_pos_words %>%
+  arrange(desc(severity_value)) %>%
+  select(book, word2, severity_value, gender, year, hard.v.soft) 
+all_pos_words$gender = as.factor(all_pos_words$gender)
+all_pos_words$POST1960 = as.factor(all_pos_words$year>1960) 
+#all_pos_words$year = as.factor(all_pos_words$year) ##only needed if looking into years as factors instead of POST1960
+all_pos_words
+
+
+```
+
+
+```{r}
+# #two way ANOVA for ALL POSTIVE WORDS
+res.aov2 <- aov(severity_value ~  hard.v.soft + POST1960*gender, data = all_pos_words) ##cross anova
+anova(res.aov2)
+
+
+```
+
+
+# ```{r}
+# #top 50 negative words 
+# top_neg_m = gender_SS %>%
+#   add_column(gender = "M") %>%
+#   arrange(severity_m) %>%
+#   head(50) %>%
+#   select(book, word2, severity_m, gender)
+# top_neg_m
+# #mean(top_pos_f$severity_f)
+# 
+# top_neg_f = gender_SS %>%
+#   add_column(gender = "F") %>%
+#   arrange(severity_f) %>%
+#   head(50) %>%
+#   select(book, word2, severity_f, gender)
+# top_neg_f
+# #mean(top_neg_f$severity_f)
+# ```
+
+```{r}
+all_neg_words = smartbind(all_neg_f, all_neg_m)
+
+all_neg_words = melt(all_neg_words, id.vars=c("book", "word2", "gender", "year", "hard.v.soft"), na.rm = TRUE, variable.name = 'severity')
+
+names(all_neg_words)[names(all_neg_words) == 'value'] <- "severity_value"
+
+all_neg_words = all_neg_words %>%
+  arrange(severity_value) %>%
+  select(book, word2, severity_value, gender, year, hard.v.soft)
+  all_neg_words$gender = as.factor(all_neg_words$gender)
+  all_neg_words$POST1960 = as.factor(all_neg_words$year>1960) 
+  #all_neg_words$year = as.factor(all_neg_words$year)
+all_neg_words
+```
+
+```{r}
+# two way ANOVA for ALL NEGATIVE WORDS
+result.aov2 <- aov(severity_value ~ POST1960*gender + hard.v.soft, data = all_neg_words)
+anova(result.aov2)
+
+# result.aov2 <- aov(severity_value ~ gender + hard.v.soft, data = all_neg_words)
+# anova(result.aov2)
+```
+
+```{r}
+total_words = rbind(all_pos_words, all_neg_words)
+total_words
+```
+
+```{r}
+# two way ANOVA for total words
+results.aov2 <- aov(severity_value ~ gender*hard.v.soft, data = total_words)
+anova(results.aov2)
+```
+
+```{r}
+# visualizing meaningful words with respect to masculine contribution
+
+meaningful_words %>%
+  mutate(contribution = masculine * value) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(15) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(masculine * value, word2, fill = masculine * value > 0)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Sentiment Severity",
+       y = "words near masculine pronouns")
+significant_words <- meaningful_words %>%
+  mutate(contribution = masculine * value) %>%
+  count(word2, contribution, total)
+significant_words[1:3]
+```
+
+```{r}
+# visualizing meaningful words with respect to feminine contribution
+meaningful_words %>%
+  mutate(contribution = feminine * value) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(15) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(feminine * value, word2, fill = feminine * value > 0)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Sentiment Severity",
+       y = "words near feminine pronouns")
+sig_words <- meaningful_words %>%
+  mutate(contribution = masculine * value) %>%
+  count(word2, contribution, total)
+meaningful_words[1:3]
+```
+
+
+
+```{r most_shifted_words, dependson = "he_she_counts", echo = FALSE}
+meaningful_words %>%
+  filter(!word2 %in% c("a", "the", "on", "with", "it", "to", "and", "in", "was", "as","how", "can", "of", "but", "not", "so", "for", "had", "if","that", "you", "I", "at", "is", "by", "when", "will", "The", "And", "did", "would", "or"),
+         total>= 15) %>%
+  group_by(direction = ifelse(log_ratio > 0, 'More "he"', "More 'she'")) %>%
+  top_n(15, abs_ratio) %>%
+  ungroup() %>%
+  mutate(word2 = reorder(word2, log_ratio)) %>%
+  ggplot(aes(word2, log_ratio, fill = direction)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "",
+       y = 'Relative appearance after "she" compared to "he"',
+       fill = "",
+       title = "Meaningful words correlated with gender",# in 100,000 plot descriptions",
+       subtitle = "Words with at least 15 uses after he/she, 15 most skewed in each direction.") +
+  scale_y_continuous(labels = c("4X", "2X", "Same", "2X"),
+                     breaks = seq(-2, 1)) +
+  guides(fill = guide_legend(reverse = TRUE))
+```
+
+
+```{r}
+one.way <- aov(severity_m ~ hard.v.soft, data = all_neg_m)
+
+summary(one.way)
+
+one.way <- aov(severity_f ~ hard.v.soft, data = all_neg_f)
+
+summary(one.way)
+```
+
+```{r}
+#two way ANOVA 
+res.aov2 <- aov(severity_m ~ book + word2, data = gender_SS)
+anova(res.aov2)
+#summary(res.aov2)
+#plot(severity_m ~ book * word2, data = gender_SS)
+```
+
+```{r}
+#graphing sentiment severity
+ggplot(gender_SS, aes(severity_m, fill = book)) +
+  geom_histogram(show.legend = FALSE) +
+  xlim(NA, 0.0009) +
+  facet_wrap(~book, ncol = 2, scales = "free_y")
+
+ggplot(gender_SS, aes(severity_f, fill = book)) +
+  geom_histogram(show.legend = FALSE) +
+  xlim(NA, 0.0009) +
+  facet_wrap(~book, ncol = 2, scales = "free_y")
+```
+
+```{r}
+words %>%
+  mutate(contribution = masculine * value) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(masculine * value, word2, fill = masculine * value > 0)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Sentiment Severity",
+       y = "words near masculine pronouns")
+
+meaningful_words <- words %>%
+  mutate(contribution = masculine * value) %>%
+  count(word2, contribution, total)
+
+meaningful_words[1:3]
+```
+
+```{r}
+
+words %>%
+  mutate(contribution = feminine * value) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(feminine * value, word2, fill = feminine * value > 0)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "Sentiment Severity",
+       y = "words near feminine pronouns")
+
+meaningful_words <- words %>%
+  mutate(contribution = masculine * value) %>%
+  count(word2, contribution, total)
+
+meaningful_words[1:3]
+```
+
